@@ -1,3 +1,5 @@
+import Order from '../model/OrderModel.js';
+import Pizza from '../model/PizzaModel.js';
 import User from '../model/UserModel.js';
 
 const getCurrentUser = async (req, res) => {
@@ -12,4 +14,43 @@ const getCurrentUser = async (req, res) => {
   }
 };
 
-export { getCurrentUser };
+const getUserOrders = async (req, res) => {
+  const { userId } = req.user;
+  if (!userId) {
+    return res.status(401).json({ message: 'Not logged in' });
+  }
+  try {
+    const userOrders = await Order.find({ user: userId }).populate({
+      path: 'products.product',
+      model: Pizza,
+      select: 'name image price description',
+    });
+
+    const newOrders = userOrders.map((order) => {
+      return {
+        id: order?._id,
+        productName: order?.products.map((product) => {
+          return product.product.name;
+        }),
+        productImage: order?.products.map((product) => {
+          return product.product.image;
+        }),
+        description: order?.products.map((product) => {
+          return product.product.description;
+        }),
+        status: order?.status,
+        createdAt: order?.createdAt,
+        updatedAt: order?.updatedAt,
+        paid: order?.isPaid,
+        address: order?.shippingAddress.address.line1,
+        city: order?.shippingAddress.address.city,
+        state: order?.shippingAddress.address.state,
+      };
+    });
+    return res.status(200).json(newOrders);
+  } catch (error) {
+    return res.status(500).json({ message: error });
+  }
+};
+
+export { getCurrentUser, getUserOrders };

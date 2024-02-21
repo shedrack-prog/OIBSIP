@@ -12,3 +12,4 @@ const CodeSchema = new mongoose.Schema({
   },
 });
 const Code = mongoose.models.Code || mongoose.model('Code', CodeSchema);
+export default Code;

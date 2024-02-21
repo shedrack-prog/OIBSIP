@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import { pizzaData } from '../data';
 import { Link, redirect, useLoaderData } from 'react-router-dom';
@@ -18,28 +18,43 @@ export const loader = async () => {
     return redirect('/login');
   }
 };
+
 const HomeLayout = () => {
+  const [pizzas, setPizzas] = useState([]);
+  useEffect(() => {
+    const fetchAllPizzas = async () => {
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/pizzas`,
+        {
+          withCredentials: true,
+        }
+      );
+      setPizzas(data);
+    };
+    fetchAllPizzas();
+  }, []);
+
+  console.log(pizzas);
   return (
     <div className=" ">
       <div className="">
         <div className="mt-[80px] w-[90%] flex items-center justify-center mx-auto ">
           <Header />
           <div className="w-full flex flex-wrap gap-[3rem] justify-center z-0">
-            {pizzaData.map((item) => {
+            {pizzas.map((item) => {
               const {
-                id,
+                _id,
                 name,
                 description,
                 price,
                 veggies,
                 image,
                 sauce,
-                base,
                 cheese,
               } = item;
 
               return (
-                <div key={id} className="flex flex-col items-center">
+                <div key={_id} className="flex flex-col items-center">
                   <img
                     src={image}
                     alt="pizza image"
@@ -54,7 +69,7 @@ const HomeLayout = () => {
                       $<p className="">{price}</p>
                     </div>
                     <Link
-                      to={`/pizza/${id}`}
+                      to={`/pizzas/${_id}`}
                       className="text-[15px] px-[20px] py-[8px] rounded-md font-medium bg-[#FFD2B3] text-gray-900"
                     >
                       Select

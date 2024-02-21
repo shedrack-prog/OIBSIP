@@ -14,6 +14,8 @@ import pizzaRouter from './routes/pizzaRoutes.js';
 import authRouter from './routes/authRoutes.js';
 import userRouter from './routes/userRoutes.js';
 import adminRouter from './routes/adminRoutes.js';
+import checkoutRouter from './routes/checkoutRoutes.js';
+import webhookRouter from './routes/webhookRoutes.js';
 
 import connectDB from './db/connectDB.js';
 
@@ -31,6 +33,7 @@ app.get('/', (req, res) => {
 });
 
 // middlewares
+app.use('/api/v1', webhookRouter);
 app.use(express.json());
 app.use(cors(corsOptions));
 app.use(cookieParser());
@@ -45,6 +48,8 @@ app.use('/api/v1/pizzas', pizzaRouter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/admin', authMiddleware, adminMiddleware, adminRouter);
+app.use('/api/v1', checkoutRouter);
+
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }

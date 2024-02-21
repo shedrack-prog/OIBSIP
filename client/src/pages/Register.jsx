@@ -112,7 +112,7 @@ const RegisterPage = () => {
         </div>
       </div>
       <span className="mt-[1.5rem]">
-        Have an account?
+        Already have an account?
         <Link className="text-blue-500 " to={'/login'}>
           Login
         </Link>

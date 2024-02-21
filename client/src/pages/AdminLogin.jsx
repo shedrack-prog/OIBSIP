@@ -4,7 +4,7 @@ import Loader from '../components/loader';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 
-const LoginPage = () => {
+const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,8 +26,8 @@ const LoginPage = () => {
       return;
     }
     try {
-      await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/auth/login`,
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/auth/admin/login`,
         {
           email,
           password,
@@ -37,10 +37,11 @@ const LoginPage = () => {
         }
       );
       setLoading(false);
-      toast.success('Login complete!');
+      toast.success(data.message);
       setTimeout(() => {
-        navigate('/home');
+        navigate('/admin/dashboard');
       }, 3000);
+      return;
     } catch (error) {
       setLoading(false);
       toast.error(error?.response?.data.message);
@@ -54,7 +55,7 @@ const LoginPage = () => {
       {loading && <Loader />}
       <div className="flex items-center justify-center h-[70%]">
         <div className="flex flex-col">
-          <h1 className="text-[37px] font-semibold">Login</h1>
+          <h1 className="text-[37px] font-semibold">Login as Admin</h1>
 
           <form onSubmit={handleLogin} className="flex flex-col gap-[3rem]">
             <input
@@ -86,20 +87,8 @@ const LoginPage = () => {
           </form>
         </div>
       </div>
-      <Link
-        to={'/reset'}
-        className="text-red-500 text-[16px] cursor-pointer mb-[5px]"
-      >
-        Forgot password?
-      </Link>
-      <span>
-        New to Shaggy Pizza?
-        <Link className="text-blue-500 " to={'/register'}>
-          {loading ? 'Please wait' : 'Register'}
-        </Link>
-      </span>
     </div>
   );
 };
 
-export default LoginPage;
+export default AdminLogin;

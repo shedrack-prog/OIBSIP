@@ -12,12 +12,17 @@ import {
   Landing,
   Login,
   Orders,
+  PizzaDetails,
   Register,
   Sauces,
   Veggies,
 } from './pages';
 import Customers from './pages/Customers';
 import { loader as HomeLayoutLoader } from './pages/HomeLayout';
+import ResetPage from './pages/ResetPage';
+import CheckoutSuccess from './pages/CheckoutSuccess';
+import AdminLogin from './pages/AdminLogin';
+import EditPizza from './pages/EditPizza';
 
 const router = createBrowserRouter([
   {
@@ -39,6 +44,18 @@ const router = createBrowserRouter([
     element: <Login />,
   },
   {
+    path: '/reset',
+    element: <ResetPage />,
+  },
+  {
+    path: '/home/success',
+    element: <CheckoutSuccess />,
+  },
+  {
+    path: '/admin/login',
+    element: <AdminLogin />,
+  },
+  {
     path: '/admin',
     element: <Admin />,
     children: [
@@ -47,9 +64,14 @@ const router = createBrowserRouter([
         element: <Dashboard />,
         index: true,
       },
+
       {
         path: 'orders',
         element: <Orders />,
+      },
+      {
+        path: 'pizzas/edit/:pizzaId',
+        element: <EditPizza />,
       },
       {
         path: 'create',
@@ -76,6 +98,10 @@ const router = createBrowserRouter([
         element: <Veggies />,
       },
     ],
+  },
+  {
+    path: '/pizzas/:pizzaId',
+    element: <PizzaDetails />,
   },
 ]);
 function App() {

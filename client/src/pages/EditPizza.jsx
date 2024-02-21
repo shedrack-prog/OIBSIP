@@ -1,18 +1,27 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 
-import AdminInput from './AdminInput';
-import SelectOptions from './select-options';
-import Loader from '../loader';
-
-import { createNewPizza } from '../../actions/pizzas';
-import dataURItoBlob from '../../functions/dataUriToBlob';
-import { uploadImages } from '../../functions/uploadImages';
-
 import { CiImageOn } from 'react-icons/ci';
 import { CiEdit } from 'react-icons/ci';
+import dataURItoBlob from '../functions/dataUriToBlob';
+import { uploadImages } from '../functions/uploadImages';
+import AdminInput from '../components/admin/AdminInput';
+import SelectOptions from '../components/admin/select-options';
+import Loader from '../components/loader';
+import {
+  getAllCheeses,
+  getAllSauces,
+  getAllVeggies,
+  getSinglePizza,
+} from '../actions/getData';
+import { useNavigate, useParams } from 'react-router-dom';
+import { updatePizzaById } from '../actions/pizzas';
 
-const CreateForm = ({ sauces, cheeses, veggies }) => {
+const EditPizza = () => {
+  const params = useParams();
+  const { pizzaId } = params;
+  const navigate = useNavigate();
+
   const imageRef = useRef(null);
   const [name, setName] = useState('');
   const [image, setImage] = useState('');
@@ -21,9 +30,38 @@ const CreateForm = ({ sauces, cheeses, veggies }) => {
   const [loading, setLoading] = useState(false);
 
   // database states
+  const [cheeses, setCheeses] = useState([]);
+  const [sauces, setSauces] = useState([]);
+  const [veggies, setVeggies] = useState([]);
+  useEffect(() => {
+    const getAllData = async () => {
+      const res1 = await getAllCheeses();
+      const res2 = await getAllSauces();
+      const res3 = await getAllVeggies();
+
+      setCheeses([...res1]);
+      setSauces([...res2]);
+      setVeggies([...res3]);
+    };
+    getAllData();
+  }, []);
+
   const [pizzaSauce, setPizzaSauce] = useState([]);
   const [pizzaCheese, setPizzaCheese] = useState([]);
   const [pizzaVeggie, setPizzaVeggie] = useState([]);
+  useEffect(() => {
+    const getData = async () => {
+      const response = await getSinglePizza(pizzaId);
+      setPizzaSauce(response.sauces);
+      setPizzaCheese(response.cheeses);
+      setPizzaVeggie(response.veggies);
+      setName(response.name);
+      setDescription(response.description);
+      setPrice(response.price);
+      setImage(response.image);
+    };
+    getData();
+  }, []);
 
   const handleClick = (name, id) => {
     if (name === 'sauces') {
@@ -85,8 +123,10 @@ const CreateForm = ({ sauces, cheeses, veggies }) => {
       let formData = new FormData();
       formData.append('file', blobImage);
       formData.append('path', path);
+
       const response = await uploadImages(formData, path);
-      const res = await createNewPizza({
+      const res = await updatePizzaById({
+        pizzaId,
         name,
         description,
         image: response[0].url,
@@ -96,16 +136,10 @@ const CreateForm = ({ sauces, cheeses, veggies }) => {
         newVeggies: pizzaVeggie,
       });
       toast.success(res?.data?.message);
-      console.log(res);
-      setName('');
-      setDescription('');
-      setPrice('');
-      setPizzaCheese([]);
-      setPizzaSauce([]);
-      setPizzaVeggie([]);
-      setImage('');
+      navigate('/admin/all-pizzas');
     } catch (error) {
       toast.error(error?.response?.data.message);
+      return;
     } finally {
       setLoading(false);
     }
@@ -117,7 +151,7 @@ const CreateForm = ({ sauces, cheeses, veggies }) => {
       <div className="mt-[1.7rem] flex items-center justify-center">
         <div className="flex flex-col ">
           <h1 className="text-[30px] text-left font-semibold mb-[20px]">
-            Create Pizza
+            Edit Pizza
           </h1>
           <form action="" className="flex items-center justify-center ">
             <div className="grid grid-cols-2 gap-[1rem] place-items-center  mx-auto">
@@ -213,7 +247,7 @@ const CreateForm = ({ sauces, cheeses, veggies }) => {
             type="submit"
             className="px-[12px] py-[8px] mb-[1rem] bg-[#FF6900] w-[40%] mt-[1rem] rounded-md text-white"
           >
-            Create
+            Save
           </button>
         </div>
       </div>
@@ -221,4 +255,4 @@ const CreateForm = ({ sauces, cheeses, veggies }) => {
   );
 };
 
-export default CreateForm;
+export default EditPizza;

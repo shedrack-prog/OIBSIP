@@ -1,6 +1,9 @@
 import Sauce from '../model/SauceModel.js';
 import Cheese from '../model/CheeseModel.js';
 import Veggie from '../model/VeggiesModel.js';
+import User from '../model/UserModel.js';
+import Order from '../model/OrderModel.js';
+import Pizza from '../model/PizzaModel.js';
 
 // Sauce Controller
 const createSauce = async (req, res) => {
@@ -105,6 +108,81 @@ const getAllVeggies = async (req, res) => {
   }
 };
 
+const getAllUsers = async (req, res) => {
+  try {
+    const allUsers = await User.find({ role: 'user' });
+    if (!allUsers) {
+      return res.status(404).json({ message: 'No users found' });
+    }
+    return res.status(200).json(allUsers);
+  } catch (error) {
+    return res.status(500).json({ message: error });
+  }
+};
+
+const getAllOrders = async (req, res) => {
+  try {
+    const allOrders = await Order.find({})
+      .populate({ path: 'user', model: User, select: 'name email image' })
+      .populate({
+        path: 'products.product',
+        model: Pizza,
+        select: 'name image price',
+      })
+      .sort({ createdAt: -1 });
+    if (allOrders.length < 1) {
+      return res.status(404).json({ message: 'No orders found' });
+    }
+
+    let updatedOrders = allOrders.map((order) => {
+      return {
+        id: order?._id,
+        userName: order?.user?.name,
+        userEmail: order?.user?.email,
+        productName: order?.products.map((product) => {
+          return product.product.name;
+        }),
+        productImage: order?.products.map((product) => {
+          return product.product.image;
+        }),
+        createdAt: order?.createdAt,
+        updatedAt: order?.updatedAt,
+        paid: order?.isPaid,
+        address: order?.shippingAddress.address.line1,
+        city: order?.shippingAddress.address.city,
+        state: order?.shippingAddress.address.state,
+        postalCode: order?.shippingAddress.address.postal_code,
+        phone: order?.shippingAddress.address.phone,
+        status: order?.status,
+      };
+    });
+    return res.status(200).json(updatedOrders);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: error });
+  }
+};
+
+const editOrderStatus = async (req, res) => {
+  const { status } = req.body;
+  const orderId = req.params.orderId;
+
+  try {
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      {
+        status: status,
+      },
+      {
+        new: true,
+      }
+    );
+
+    return res.status(200).json({ message: 'update successful' });
+  } catch (error) {
+    return res.status(500).json({ message: error });
+  }
+};
 export {
   createSauce,
   getAllSauces,
@@ -112,4 +190,7 @@ export {
   getAllVeggies,
   createCheese,
   createVeggie,
+  getAllUsers,
+  getAllOrders,
+  editOrderStatus,
 };

@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import CreateForm from '../components/admin/create';
-import { getAllCheeses, getAllSauces, getAllVeggies } from '../actions/getData';
+import {
+  getAllCheeses,
+  getAllSauces,
+  getAllVeggies,
+  getSinglePizza,
+} from '../actions/getData';
+import { useAppContext } from '../context/appContext';
 
 const CreatePizza = () => {
   const [cheeses, setCheeses] = useState([]);

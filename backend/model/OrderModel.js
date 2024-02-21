@@ -8,6 +8,9 @@ const OrderSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    customerId: {
+      type: String,
+    },
 
     products: [
       {
@@ -21,15 +24,28 @@ const OrderSchema = new mongoose.Schema(
     chesses: [],
     veggies: [],
     sauces: [],
-    totalPrice: {
+    subtotal: {
       type: Number,
       required: true,
+    },
+    total: {
+      type: Number,
+      required: true,
+    },
+    shippingPrice: {
+      type: Number,
+      required: true,
+      default: 0,
     },
 
     isPaid: {
       type: Boolean,
       required: true,
       default: false,
+    },
+
+    payment_status: {
+      type: String,
     },
 
     status: {
@@ -42,6 +58,11 @@ const OrderSchema = new mongoose.Schema(
         'Delivered',
       ],
       default: 'Not Processed',
+    },
+
+    shippingAddress: {
+      type: Object,
+      required: true,
     },
     paidAt: {
       type: Date,

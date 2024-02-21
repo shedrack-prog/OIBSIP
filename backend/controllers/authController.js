@@ -1,8 +1,14 @@
 import { BadRequestError } from '../errors/customError.js';
-import { sendVerificationEmail } from '../helpers/mailer.js';
+import {
+  sendResetCodeFunction,
+  sendVerificationEmailFunction,
+} from '../helpers/mailer.js';
 import { createToken } from '../helpers/tokens.js';
 import { validateEmail, validateLength } from '../helpers/validations.js';
+import { generateCode } from '../helpers/generateCode.js';
+
 import User from '../model/UserModel.js';
+import Code from '../model/CodeModel.js';
 import bcrypt from 'bcryptjs';
 
 const registerUser = async (req, res) => {
@@ -50,14 +56,14 @@ const registerUser = async (req, res) => {
       role,
     }).save();
 
-    const emailVerificationToken = createToken({ id: newUser._id }, '5d');
+    const emailVerificationToken = createToken({ userId: newUser._id }, '5d');
     const url = `${process.env.FRONTEND_URL}/activate/${emailVerificationToken}`;
-    sendVerificationEmail(newUser.email, newUser.name, url);
+    sendVerificationEmailFunction(newUser.email, newUser.name, url);
 
-    const token = createToken(
-      { userId: newUser._id, role: newUser.role },
-      '7d'
-    );
+    // const token = createToken(
+    //   { userId: newUser._id, role: newUser.role },
+    //   '7d'
+    // );
 
     return res.status(201).json({
       message:
@@ -106,6 +112,143 @@ const loginUser = async (req, res) => {
     return response.status(400).json({ message: error });
   }
 };
+const findUser = async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({
+      message: 'Please provide email',
+    });
+  }
+  try {
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ message: 'No user found' });
+    }
+    return res.status(200).json({
+      user: {
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        picture: user.image,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: 'Please provide email and password.' });
+    }
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: 'No account found with email provided.' });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return res.status(401).json({ message: 'Password is incorrect' });
+    }
+
+    const isAdmin = user.role === 'admin' ? true : false;
+    if (!isAdmin) {
+      return res
+        .status(403)
+        .json({ message: 'You are not authorized to access this route' });
+    }
+
+    const token = createToken({ userId: user._id, role: user.role }, '7d');
+    const oneDay = 1000 * 60 * 60 * 24;
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      expires: new Date(Date.now() + oneDay),
+    });
+    return res.status(200).json({
+      message: 'Login successful.',
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const sendResetPasswordCode = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res
+        .status(400)
+        .json({ message: 'Please provide your email address' });
+    }
+    const user = await User.findOne({ email: email.toLowerCase() }).select(
+      '-password'
+    );
+    if (!user) {
+      return res.status(404).json({ message: 'No user found' });
+    }
+    await Code.findOneAndDelete({ user: user._id });
+    const code = generateCode(5);
+    const savedCode = await new Code({
+      code,
+      user: user._id,
+    }).save();
+    sendResetCodeFunction(user.email, user.name, code);
+    return res.status(200).json({
+      message: 'Password reset code has been sent to your email',
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+const validateResetCode = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    const user = await User.findOne({ email });
+    const Dbcode = await Code.findOne({ user: user._id });
+    if (Dbcode.code !== code) {
+      return res.status(400).json({
+        message: 'Verification code is wrong...',
+      });
+    }
+    return res.status(200).json({ message: 'ok' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const changePassword = async (req, res) => {
+  const { email, password, confirmPassword } = req.body;
+  if (!email) {
+    return res
+      .status(400)
+      .json({ message: 'Please go back to find your account.' });
+  }
+  if (!password) {
+    return res.status(400).json({ message: 'Please enter your new password' });
+  }
+  if (password !== confirmPassword) {
+    return res.status(400).json({ message: 'Passwords do not match' });
+  }
+
+  const salt = await bcrypt.genSalt(12);
+
+  const cryptedPassword = await bcrypt.hash(password, salt);
+  await User.findOneAndUpdate(
+    { email },
+    {
+      password: cryptedPassword,
+    }
+  );
+  return res.status(200).json({ message: 'success' });
+};
 
 const logout = (req, res) => {
   res.cookie('token', 'logout', {
@@ -116,4 +259,13 @@ const logout = (req, res) => {
     message: 'Logout successful.',
   });
 };
-export { registerUser, loginUser, logout };
+export {
+  registerUser,
+  loginUser,
+  findUser,
+  adminLogin,
+  logout,
+  sendResetPasswordCode,
+  validateResetCode,
+  changePassword,
+};

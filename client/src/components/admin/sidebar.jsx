@@ -75,7 +75,7 @@ const Sidebar = () => {
                     `${
                       isActive
                         ? 'bg-[#FFD2B3] w-[90%] px-[12px] flex py-[13px] text-gray-900 text-[16px] items-center gap-x-4 rounded-lg '
-                        : 'bg-white w-[90%] px-[12px] flex py-[13px] text-gray-900 text-[16px] items-center gap-x-4 rounded-lg'
+                        : 'bg-white w-[90%] px-[12px] flex hover:bg-gray-100 py-[13px] text-gray-900 text-[16px] items-center gap-x-4 rounded-lg'
                     }`
                   }
                   key={id}

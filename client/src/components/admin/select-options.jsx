@@ -12,7 +12,7 @@ const SelectOptions = ({ name, data, type, handleClick }) => {
         <p className="mb-[10px] text-gray-600 read-only">
           ({type.length}) selected
         </p>
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-3">
           {data?.map((item) => {
             let alreadyIncluded = type.includes(item._id);
 
@@ -23,8 +23,8 @@ const SelectOptions = ({ name, data, type, handleClick }) => {
                 onClick={() => handleClick(name, item._id)}
                 className={`${
                   alreadyIncluded
-                    ? 'bg-blue-400 text-gray-900 px-[8px] py-[6px] cursor-pointer rounded-md text-[14px] border-[1px] border-gray-400 h-[100%] '
-                    : 'px-[8px] py-[6px] text-center cursor-pointer rounded-md text-[14px] bg-gray-300 border-[1px] border-gray-400 h-[100%]'
+                    ? 'bg-blue-300 text-gray-900 px-[8px] py-[6px] cursor-pointer rounded-md text-[14px] h-[100%] '
+                    : 'px-[8px] py-[6px] text-center cursor-pointer rounded-md text-[14px] bg-gray-200 h-[100%]'
                 } `}
               >
                 {item.name}

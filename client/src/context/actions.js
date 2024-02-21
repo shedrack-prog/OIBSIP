@@ -1,1 +1,2 @@
-export const SET_EDIT_JOB = 'SET_EDIT_JOB';
+export const SET_EDIT_PIZZA = 'SET_EDIT_JOB';
+export const GET_SINGLE_PIZZA = 'GET_SINGLE_PIZZA';
