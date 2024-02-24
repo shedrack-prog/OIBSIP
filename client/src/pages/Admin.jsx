@@ -27,7 +27,7 @@ const Admin = () => {
       <Sidebar />
       <div className="flex flex-col">
         <AdminHeader />
-        <div className="ml-[300px] px-[10px] mt-[50px]">
+        <div className="ml-[300px] px-[0px] mt-[50px] h-full">
           <Outlet />
         </div>
       </div>

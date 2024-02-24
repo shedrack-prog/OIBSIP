@@ -30,6 +30,7 @@ const Veggies = () => {
           withCredentials: true,
         }
       );
+      setLoading(false);
       toast.success('Veggie created successfully');
       setName('');
       window.location.reload();

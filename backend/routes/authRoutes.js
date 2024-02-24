@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+  activateAccount,
   adminLogin,
   changePassword,
   findUser,
@@ -10,6 +11,7 @@ import {
   validateResetCode,
 } from '../controllers/authController.js';
 import adminMiddleware from '../middleware/adminMiddleware.js';
+import { authMiddleware } from '../middleware/authmiddleware.js';
 
 const router = Router();
 
@@ -21,5 +23,6 @@ router.route('/admin/login').post(adminLogin);
 router.route('/send-reset-code').post(sendResetPasswordCode);
 router.route('/validate-reset-code').post(validateResetCode);
 router.route('/change-password').post(changePassword);
+router.route('/activate-account').post(authMiddleware, activateAccount);
 
 export default router;

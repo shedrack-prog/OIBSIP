@@ -14,8 +14,9 @@ import {
   getAllVeggies,
   getSinglePizza,
 } from '../actions/getData';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { updatePizzaById } from '../actions/pizzas';
+import { FaArrowAltCircleLeft } from 'react-icons/fa';
 
 const EditPizza = () => {
   const params = useParams();
@@ -51,6 +52,8 @@ const EditPizza = () => {
   const [pizzaVeggie, setPizzaVeggie] = useState([]);
   useEffect(() => {
     const getData = async () => {
+      setLoading(true);
+
       const response = await getSinglePizza(pizzaId);
       setPizzaSauce(response.sauces);
       setPizzaCheese(response.cheeses);
@@ -59,6 +62,7 @@ const EditPizza = () => {
       setDescription(response.description);
       setPrice(response.price);
       setImage(response.image);
+      setLoading(false);
     };
     getData();
   }, []);
@@ -135,7 +139,7 @@ const EditPizza = () => {
         newCheeses: pizzaCheese,
         newVeggies: pizzaVeggie,
       });
-      toast.success(res?.data?.message);
+      toast.success('Pizza updated');
       navigate('/admin/all-pizzas');
     } catch (error) {
       toast.error(error?.response?.data.message);
@@ -148,13 +152,21 @@ const EditPizza = () => {
   return (
     <>
       {loading && <Loader />}
-      <div className="mt-[1.7rem] flex items-center justify-center">
+      <div className="mt-[1.5rem] flex items-center justify-center px-2">
         <div className="flex flex-col ">
-          <h1 className="text-[30px] text-left font-semibold mb-[20px]">
+          <Link
+            to={'/admin/all-pizzas'}
+            className="text-blue-400 hover:text-blue-300 transition-all duration-150 text-[15px]
+            flex items-center gap-x-1 mb-4"
+          >
+            <FaArrowAltCircleLeft />
+            Go back
+          </Link>
+          <h1 className="text-[30px] text-left font-medium mb-[20px]">
             Edit Pizza
           </h1>
-          <form action="" className="flex items-center justify-center ">
-            <div className="grid grid-cols-2 gap-[1rem] place-items-center  mx-auto">
+          <form className="flex items-center justify-center  ">
+            <div className="grid grid-cols-2 gap-[1rem] ml-0  mx-auto">
               <AdminInput
                 id="name"
                 name={name}

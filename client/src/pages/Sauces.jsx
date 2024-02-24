@@ -30,6 +30,7 @@ const Sauces = () => {
           withCredentials: true,
         }
       );
+      setLoading(false);
       toast.success('Sauce created successfully');
       setName('');
       window.location.reload();

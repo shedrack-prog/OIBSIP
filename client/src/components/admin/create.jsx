@@ -114,13 +114,13 @@ const CreateForm = ({ sauces, cheeses, veggies }) => {
   return (
     <>
       {loading && <Loader />}
-      <div className="mt-[1.7rem] flex items-center justify-center">
+      <div className="mt-[1.7rem] flex items-center justify-center px-2">
         <div className="flex flex-col ">
           <h1 className="text-[30px] text-left font-semibold mb-[20px]">
             Create Pizza
           </h1>
           <form action="" className="flex items-center justify-center ">
-            <div className="grid grid-cols-2 gap-[1rem] place-items-center  mx-auto">
+            <div className="ml-0 grid grid-cols-2 gap-[1rem] place-items-center  mx-auto">
               <AdminInput
                 id="name"
                 name={name}

@@ -20,12 +20,18 @@ const getUserOrders = async (req, res) => {
     return res.status(401).json({ message: 'Not logged in' });
   }
   try {
-    const userOrders = await Order.find({ user: userId }).populate({
-      path: 'products.product',
-      model: Pizza,
-      select: 'name image price description',
-    });
-
+    const userOrders = await Order.find({ user: userId })
+      .populate({
+        path: 'products.product',
+        model: Pizza,
+        select: 'name image price description',
+      })
+      .sort({ createdAt: -1 });
+    if (!userOrders) {
+      return res
+        .status(404)
+        .json({ message: 'You have not placed any orders yet.' });
+    }
     const newOrders = userOrders.map((order) => {
       return {
         id: order?._id,
@@ -43,8 +49,8 @@ const getUserOrders = async (req, res) => {
         updatedAt: order?.updatedAt,
         paid: order?.isPaid,
         address: order?.shippingAddress.address.line1,
-        city: order?.shippingAddress.address.city,
-        state: order?.shippingAddress.address.state,
+        totalPaid: order?.total,
+        quantity: order?.quantity,
       };
     });
     return res.status(200).json(newOrders);

@@ -6,7 +6,7 @@ const SelectOptions = ({ name, data, type, handleClick }) => {
   return (
     <div>
       <div>
-        <p className="text-gray-900 text-[18px] pt-[1rem] font-medium">
+        <p className="text-gray-900 text-[20px] pt-[1rem] font-medium">
           Select {name} for the pizza
         </p>
         <p className="mb-[10px] text-gray-600 read-only">

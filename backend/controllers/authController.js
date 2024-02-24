@@ -1,4 +1,5 @@
 import { BadRequestError } from '../errors/customError.js';
+import jwt from 'jsonwebtoken';
 import {
   sendResetCodeFunction,
   sendVerificationEmailFunction,
@@ -60,11 +61,6 @@ const registerUser = async (req, res) => {
     const url = `${process.env.FRONTEND_URL}/activate/${emailVerificationToken}`;
     sendVerificationEmailFunction(newUser.email, newUser.name, url);
 
-    // const token = createToken(
-    //   { userId: newUser._id, role: newUser.role },
-    //   '7d'
-    // );
-
     return res.status(201).json({
       message:
         'Account created! check your email to activate and continue. The verification link will expire in five(5) days.',
@@ -74,8 +70,8 @@ const registerUser = async (req, res) => {
     return response.status(400).json({ message: error });
   }
 };
-// Login Functionality
 
+// Login Functionality
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -112,6 +108,8 @@ const loginUser = async (req, res) => {
     return response.status(400).json({ message: error });
   }
 };
+
+// Find User Controller
 const findUser = async (req, res) => {
   const { email } = req.body;
   if (!email) {
@@ -259,10 +257,41 @@ const logout = (req, res) => {
     message: 'Logout successful.',
   });
 };
+
+const activateAccount = async (req, res) => {
+  try {
+    const { token } = req.body;
+    const validUser = req.user.userId;
+
+    const payload = jwt.verify(token, process.env.CREATE_TOKEN_SECRET);
+    const user = await User.findOne({ _id: payload.userId }).select(
+      '-password'
+    );
+    if (validUser !== payload.userId) {
+      return res.status(403).json({
+        message: 'You are not authorized to perform this action',
+      });
+    }
+    if (user.emailVerified === true) {
+      return res.status(400).json({
+        message: 'Email has already been verified',
+      });
+    } else {
+      user.emailVerified = true;
+      await user.save();
+      return res.status(200).json({
+        message: 'Email has been verified',
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
 export {
   registerUser,
   loginUser,
   findUser,
+  activateAccount,
   adminLogin,
   logout,
   sendResetPasswordCode,

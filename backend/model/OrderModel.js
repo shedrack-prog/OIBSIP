@@ -20,6 +20,9 @@ const OrderSchema = new mongoose.Schema(
         },
       },
     ],
+    size: {
+      type: String,
+    },
 
     chesses: [],
     veggies: [],
@@ -59,7 +62,10 @@ const OrderSchema = new mongoose.Schema(
       ],
       default: 'Not Processed',
     },
-
+    quantity: {
+      type: Number,
+      required: true,
+    },
     shippingAddress: {
       type: Object,
       required: true,

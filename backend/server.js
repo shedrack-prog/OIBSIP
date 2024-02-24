@@ -47,7 +47,7 @@ app.use(
 app.use('/api/v1/pizzas', pizzaRouter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);
-app.use('/api/v1/admin', authMiddleware, adminMiddleware, adminRouter);
+app.use('/api/v1/admin', authMiddleware, adminRouter);
 app.use('/api/v1', checkoutRouter);
 
 if (process.env.NODE_ENV === 'development') {

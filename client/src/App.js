@@ -23,6 +23,7 @@ import ResetPage from './pages/ResetPage';
 import CheckoutSuccess from './pages/CheckoutSuccess';
 import AdminLogin from './pages/AdminLogin';
 import EditPizza from './pages/EditPizza';
+import ActivateAccount from './pages/ActivateAccount';
 
 const router = createBrowserRouter([
   {
@@ -42,6 +43,10 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: <Login />,
+  },
+  {
+    path: '/activate/:token',
+    element: <ActivateAccount />,
   },
   {
     path: '/reset',

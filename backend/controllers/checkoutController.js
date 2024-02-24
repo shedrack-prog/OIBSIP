@@ -5,7 +5,7 @@ import StripeCustomer from '../model/StripeCustomerModel.js';
 import { stripe } from '../utils/stripe.js';
 
 const checkoutController = async (req, res) => {
-  const { pizzaId, userId, qty } = req.body;
+  const { pizzaId, userId, qty, size } = req.body;
   try {
     if (!pizzaId) {
       return res.status(200).json({
@@ -17,6 +17,11 @@ const checkoutController = async (req, res) => {
       return res.status(200).json({
         message: `No pizza found with id: ${pizzaId}`,
       });
+    }
+    if (pizza.totalInStock < qty) {
+      return res
+        .status(400)
+        .json({ message: 'Pizzas in stock is less than quantity specified' });
     }
 
     const user = await User.findOne({ _id: userId }).select('-password');
@@ -72,6 +77,8 @@ const checkoutController = async (req, res) => {
       metadata: {
         pizzaId,
         userId,
+        qty,
+        size,
         // cheeses: JSON.stringify(cheeses),
         // veggies: JSON.stringify(veggies),
         // sauces: JSON.stringify(sauces),

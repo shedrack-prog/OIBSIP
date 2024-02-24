@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
 import { ClipLoader, ScaleLoader } from 'react-spinners';
+import { toast } from 'react-toastify';
 const TableActions = ({
   params,
   rowId,
@@ -25,9 +26,9 @@ const TableActions = ({
           withCredentials: true,
         }
       );
-      console.log(data);
+      toast.success('Status Updated');
     } catch (error) {
-      console.log(error);
+      toast.error('Error updating Status');
     } finally {
       setLoading(false);
     }
@@ -57,24 +58,20 @@ const TableActions = ({
   ];
   return (
     <div>
-      {loading ? (
-        <ClipLoader color="#36d7b7" size={'24px'} />
-      ) : (
-        <select
-          className=""
-          defaultValue={dbStatus}
-          onChange={handleStatusChange}
-        >
-          {status.map((stat, index) => (
-            <>
-              <option key={index} className="w-full h-full" value={stat.value}>
-                {stat.name}
-              </option>
-              <IoIosArrowDown size={25} />
-            </>
-          ))}
-        </select>
-      )}
+      <select
+        className=""
+        defaultValue={dbStatus}
+        onChange={handleStatusChange}
+      >
+        {status.map((stat, index) => (
+          <>
+            <option key={index} className="w-full h-full" value={stat.value}>
+              {stat.name}
+            </option>
+            <IoIosArrowDown size={25} />
+          </>
+        ))}
+      </select>
     </div>
   );
 };

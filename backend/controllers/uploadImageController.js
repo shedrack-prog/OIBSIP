@@ -13,12 +13,14 @@ const uploadImages = async (req, res) => {
     const { path } = req.body;
     let files = Object.values(req.files).flat();
     let images = [];
-    for (const file of files) {
-      const url = await uploadToCloudinary(file, path);
-      images.push(url);
-      removeTmp(file.tempFilePath);
+    if (files.length > 0) {
+      for (const file of files) {
+        const url = await uploadToCloudinary(file, path);
+        images.push(url);
+        removeTmp(file.tempFilePath);
+      }
+      res.status(200).json(images);
     }
-    res.status(200).json(images);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

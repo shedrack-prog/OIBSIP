@@ -154,6 +154,7 @@ const getAllOrders = async (req, res) => {
         postalCode: order?.shippingAddress.address.postal_code,
         phone: order?.shippingAddress.address.phone,
         status: order?.status,
+        size: order?.size,
       };
     });
     return res.status(200).json(updatedOrders);
@@ -183,6 +184,98 @@ const editOrderStatus = async (req, res) => {
     return res.status(500).json({ message: error });
   }
 };
+
+const getTotalRevenue = async (req, res) => {
+  try {
+    const paidOrders = await Order.find({
+      isPaid: true,
+    }).populate({
+      path: 'products.product',
+      model: Pizza,
+      select: 'price',
+    });
+
+    const totalRevenue = paidOrders.reduce((total, order) => {
+      const orderTotal = order.products.reduce((orderSum, item) => {
+        return orderSum + item.product.price;
+      }, 0);
+      return total + orderTotal;
+    }, 0);
+
+    res.status(200).json(totalRevenue);
+  } catch (error) {
+    return res.status(500).json({ message: error });
+  }
+};
+
+const getTotalSales = async (req, res) => {
+  try {
+    const totalSales = await Order.countDocuments();
+    res.status(200).json(totalSales);
+  } catch (error) {
+    return res.status(500).json({ message: error });
+  }
+};
+
+const getTotalPizzas = async (req, res) => {
+  try {
+    const totalPizzas = await Pizza.countDocuments();
+    res.status(200).json(totalPizzas);
+  } catch (error) {
+    return res.status(500).json({ message: error });
+  }
+};
+
+const getGraphRevenue = async (req, res) => {
+  try {
+    const paidOrders = await Order.find({
+      isPaid: true,
+    }).populate({
+      path: 'products.product',
+      model: Pizza,
+      select: 'price',
+    });
+    let monthlyRevenue = {};
+    for (const order of paidOrders) {
+      const month = order.createdAt.getMonth();
+      let revenueForOrder = 0;
+
+      for (const item of order.products) {
+        revenueForOrder += item.product.price;
+      }
+
+      // Adding the revenue for this order to the respective month
+      monthlyRevenue[month] = (monthlyRevenue[month] || 0) + revenueForOrder;
+    }
+
+    // Converting the grouped data into the format expected by the graph
+    const graphData = [
+      { name: 'Jan', total: 0 },
+      { name: 'Feb', total: 0 },
+      { name: 'Mar', total: 0 },
+      { name: 'Apr', total: 0 },
+      { name: 'May', total: 0 },
+      { name: 'Jun', total: 0 },
+      { name: 'Jul', total: 0 },
+      { name: 'Aug', total: 0 },
+      { name: 'Sep', total: 0 },
+      { name: 'Oct', total: 0 },
+      { name: 'Nov', total: 0 },
+      { name: 'Dec', total: 0 },
+    ];
+
+    // Filling in the revenue data
+    for (const month in monthlyRevenue) {
+      graphData[parseInt(month)].total = monthlyRevenue[parseInt(month)];
+    }
+
+    return res.status(200).json(graphData);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: error });
+  }
+};
+
 export {
   createSauce,
   getAllSauces,
@@ -193,4 +286,8 @@ export {
   getAllUsers,
   getAllOrders,
   editOrderStatus,
+  getTotalRevenue,
+  getTotalSales,
+  getTotalPizzas,
+  getGraphRevenue,
 };

@@ -30,6 +30,7 @@ const Cheeses = () => {
           withCredentials: true,
         }
       );
+      setLoading(true);
       toast.success('Cheese created successfully');
       setName('');
       window.location.reload();

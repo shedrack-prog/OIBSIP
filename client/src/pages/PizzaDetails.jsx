@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import { pizzaData } from '../data';
 import SelectOptions from '../components/admin/select-options';
 import { FaTimes } from 'react-icons/fa';
+import { FaPlus, FaMinus } from 'react-icons/fa6';
+
 import {
   getAllCheeses,
   getAllSauces,
@@ -12,11 +14,12 @@ import {
 } from '../actions/getData';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import { ClipLoader } from 'react-spinners';
 
 const PizzaDetails = () => {
   const { pizzaId } = useParams();
   const [singlePizza, setSinglePizza] = useState({});
-
+  const [loading, setLoading] = useState(false);
   const [cheeses, setCheeses] = useState([]);
   const [sauces, setSauces] = useState([]);
   const [veggies, setVeggies] = useState([]);
@@ -50,20 +53,31 @@ const PizzaDetails = () => {
   const [pizzaSauce, setPizzaSauce] = useState([]);
   const [pizzaCheese, setPizzaCheese] = useState([]);
   const [pizzaVeggie, setPizzaVeggie] = useState([]);
-  // console.log(pizzaId);
-
+  let totalAmount = singlePizza.price * qty;
   const handleClick = (name, id) => {
     if (name === 'sauces') {
+      if (pizzaSauce.length === 2) {
+        toast.error('Maximum of two sauces can be selected');
+        return;
+      }
       setPizzaSauce((s) =>
         s.includes(id) ? s.filter((item) => item !== id) : [...s, id]
       );
       return;
     } else if (name === 'cheeses') {
+      if (pizzaCheese.length === 4) {
+        toast.error('Maximum of four cheeses can be selected');
+        return;
+      }
       setPizzaCheese((s) =>
         s.includes(id) ? s.filter((item) => item !== id) : [...s, id]
       );
       return;
     } else {
+      if (pizzaVeggie.length === 5) {
+        toast.error('Maximum of five veggies can be selected');
+        return;
+      }
       setPizzaVeggie((s) =>
         s.includes(id) ? s.filter((item) => item !== id) : [...s, id]
       );
@@ -71,36 +85,60 @@ const PizzaDetails = () => {
   };
   const handleQty = (type) => {
     if (type === 'plus') {
+      if (qty === 25) {
+        toast.error('Maximum quantity cannot exceed 25');
+        return;
+      }
       setQty((prev) => (prev === 25 ? 25 : prev + 1));
     } else if (type === 'minus') {
+      if (qty === 1) {
+        toast.error('Minimum quantity must be 1');
+        return;
+      }
       setQty((prev) => (prev === 1 ? 1 : prev - 1));
     }
   };
 
   const handleCheckout = async () => {
+    setLoading(true);
+    if (!selectedSize) {
+      toast.error('Please select a size');
+      setLoading(false);
+      return;
+    }
+    if (!pizzaCheese.length || !pizzaSauce.length || !pizzaVeggie.length) {
+      toast.error('Please select at least one sauce, cheese and veggie');
+      setLoading(false);
+      return;
+    }
     try {
+      if (singlePizza.totalInStock < qty) {
+        toast.error('Total in stock is less than quantity specified');
+        setLoading(false);
+        return;
+      }
       const { data } = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/checkout`,
         {
           pizzaId: pizzaId,
           userId: user.user._id,
+          size: selectedSize,
+          qty: qty,
           // cheeses: pizzaCheese,
           // sauces: pizzaSauce,
           // veggies: pizzaVeggie,
-          qty: qty,
         },
         {
           withCredentials: true,
         }
       );
-
+      setLoading(false);
       window.location.assign(data.url);
     } catch (error) {
+      setLoading(false);
       toast.error(error.response?.data?.message);
-      console.log(error);
     }
   };
-  console.log(user?.user._id);
   return (
     <div className="flex items-center justify-center h-screen bg-[rgba(0,0,0,0.3)]">
       <div className="flex justify-center gap-[2rem] items-center  pl-[1.5rem] rounded-2xl w-[75%] mx-auto my-auto h-[90%] bg-white ">
@@ -171,28 +209,34 @@ const PizzaDetails = () => {
                     onClick={() => handleQty('minus')}
                     className="text-[30px] px-4 bg-gray-100 rounded-full cursor-pointer"
                   >
-                    -
+                    <FaMinus />
                   </span>
-                  <span className="text-[26px] font-bold ">{qty}</span>
+                  <span className="text-[26px] font-bold read-only: ">
+                    {qty}
+                  </span>
                   <span
                     onClick={() => handleQty('plus')}
                     className="text-[30px] px-4 bg-gray-100 rounded-full cursor-pointer"
                   >
-                    +
+                    <FaPlus />
                   </span>
                 </div>
               </div>
               <div className="flex gap-2 items-center mt-[1rem]">
-                <p className="text-[27px] font-semibold">Total:</p>
-                <p className="text-[25px] font-medium">${singlePizza.price}</p>
+                <p className="text-[27px] font-semibold read-only">Total:</p>
+                <p className="text-[25px] font-medium">${totalAmount}</p>
               </div>
               <button
                 type="button"
-                // disabled={ !pizzaSauce.length}
+                disabled={singlePizza.totalInStock < qty}
                 onClick={() => handleCheckout()}
-                className="text-white px-[13px] py-[10px] text-center bg-[#FF6900] mt-[2rem] block rounded-md"
+                className="text-white w-[150px] h-[40px] text-center bg-[#FF6900] mt-[2rem] block rounded-md"
               >
-                Checkout
+                {loading ? (
+                  <ClipLoader color="white" size={'24px'} className="" />
+                ) : (
+                  'Checkout'
+                )}
               </button>
             </div>
           </div>

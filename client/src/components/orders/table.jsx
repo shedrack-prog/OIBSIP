@@ -8,6 +8,7 @@ import { getAllCustomers, getAllOrders } from '../../actions/getData';
 import { CiEdit } from 'react-icons/ci';
 import { useAppContext } from '../../context/appContext';
 import TableActions from './table-actions';
+import { ClipLoader } from 'react-spinners';
 
 const OrderTable = ({ data }) => {
   const [pageSize, setPageSize] = useState(5);
@@ -58,7 +59,7 @@ const OrderTable = ({ data }) => {
       {
         field: 'createdAt',
         headerName: 'Created At',
-        width: 150,
+        width: 120,
         renderCell: (params) =>
           moment(params.row.createdAt).format('YYYY-MM-DD'),
 
@@ -82,34 +83,42 @@ const OrderTable = ({ data }) => {
       {
         field: 'updatedAt',
         headerName: 'Updated At',
-        width: 150,
+        width: 120,
         renderCell: (params) =>
           moment(params.row.updatedAt).format('YYYY-MM-DD'),
+      },
+      {
+        field: 'size',
+        headerName: 'Size',
+        width: 100,
       },
 
       {
         field: 'status',
         headerName: 'Status',
         width: 150,
-        renderCell: (params) => (
-          <TableActions
-            {...{
-              params,
-              rowId,
-              setRowId,
-              loading,
-              setLoading,
-              dbStatus: params.row.status,
-            }}
-          />
-        ),
+        renderCell: (params) =>
+          loading ? (
+            <ClipLoader color="green" size={'24px'} />
+          ) : (
+            <TableActions
+              {...{
+                params,
+                rowId,
+                setRowId,
+                loading,
+                setLoading,
+                dbStatus: params.row.status,
+              }}
+            />
+          ),
       },
     ],
     [rowId]
   );
 
   return (
-    <div className="min-w-[calc(100vw- )] flex  flex-col mt-[20px] ">
+    <div className="min-w-[calc(100vw- )] flex  flex-col mt-[20px] overflow-x-scroll ">
       <h3 className="text-[35px] text-gray-800 font-medium mb-[1rem] px-2">
         All Orders
       </h3>
