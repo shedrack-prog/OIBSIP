@@ -77,7 +77,7 @@ const ChangePassword = ({
                 type="submit"
                 className="text-blue-500 text-[18px] font-medium"
               >
-                Verify
+                Save
               </button>
             </div>
           </form>

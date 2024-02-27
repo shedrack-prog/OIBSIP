@@ -57,6 +57,16 @@ const registerUser = async (req, res) => {
       role,
     }).save();
 
+    const token = createToken(
+      { userId: newUser._id, role: userUser.role },
+      '7d'
+    );
+    const oneDay = 1000 * 60 * 60 * 24;
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      expires: new Date(Date.now() + oneDay),
+    });
     const emailVerificationToken = createToken({ userId: newUser._id }, '5d');
     const url = `${process.env.FRONTEND_URL}/activate/${emailVerificationToken}`;
     sendVerificationEmailFunction(newUser.email, newUser.name, url);

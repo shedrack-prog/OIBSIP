@@ -32,14 +32,14 @@ const ActivateAccount = () => {
       setSuccess(data.message);
       setTimeout(() => {
         navigate('/home');
-      });
+      }, 7000);
     } catch (error) {
       setLoading(false);
       setError(error?.response?.data?.message);
       toast.error(error?.response?.data?.message);
       setTimeout(() => {
         navigate('/home');
-      });
+      }, 7000);
       console.log(error);
     }
   };
